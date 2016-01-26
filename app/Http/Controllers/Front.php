@@ -2,9 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Brand;
+use App\Category;
 use App\Http\Controllers\Controller;
+use App\Product;
 
 class Front extends Controller {
+
+    var $brands;
+    var $categories;
+    var $products;
+    var $title;
+    var $description;
+
+    public function __construct() {
+        $this->brands = Brand::all(array('name'));
+        $this->categories = Category::all(array('name'));
+        $this->products = Product::all(array('id','name','price'));
+    }
 
     public function index() {
         return view('home', array('page' => 'home'));
