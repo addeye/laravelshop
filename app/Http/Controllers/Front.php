@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Brand;
 use App\Category;
-use App\Http\Controllers\Controller;
 use App\Product;
+use Illuminate\Support\Facades\Request;
+use Cart;
 
 class Front extends Controller {
 
@@ -26,7 +27,7 @@ class Front extends Controller {
     }
 
     public function products() {
-        return view('products', array('page' => 'products'));
+        return view('products', array('title' => 'Products Listing','description' => '','page' => 'products', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function product_details($id) {
@@ -62,7 +63,38 @@ class Front extends Controller {
     }
 
     public function cart() {
-        return view('cart', array('page' => 'home'));
+        //update/ add new item to cart
+        if (Request::isMethod('post')) {
+            $product_id = Request::get('product_id');
+            $product = Product::find($product_id);
+            Cart::add(array('id' => $product_id, 'name' => $product->name, 'qty' => 1, 'price' => $product->price));
+        }
+
+        if (Request::isMethod('get')) {
+            $product_id = Request::get('product_id');
+            $jml = Request::get('jml');
+            $product = Product::find($product_id);
+            Cart::add(array('id' => $product_id, 'name' => $product->name, 'qty' => $jml, 'price' => $product->price));
+
+            $rowId = Cart::search(array('id' => Request::get('product_id')));
+            $item = Cart::get($rowId[0]);
+        }
+
+        //increment the quantity
+        if (Request::get('product_id') && (Request::get('increment')) == 1) {
+            Cart::update($rowId[0], $item->qty + 1);
+        }
+
+        //decrease the quantity
+        if (Request::get('product_id') && (Request::get('decrease')) == 1) {
+
+            Cart::update($rowId[0], $item->qty - 1);
+        }
+
+        $cart = Cart::content();
+
+
+        return view('cart', array('cart' => $cart, 'title' => 'Welcome', 'description' => '', 'page' => 'home'));
     }
 
     public function checkout() {

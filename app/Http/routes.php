@@ -20,9 +20,11 @@ Route::get('/blog/post/{id}','Front@blog_post');
 Route::get('/contact-us','Front@contact_us');
 Route::get('/login','Front@login');
 Route::get('/logout','Front@logout');
-Route::get('/cart','Front@cart');
+
 Route::get('/checkout','Front@checkout');
 Route::get('/search/{query}','Front@search');
+Route::post('/cart','Front@cart');
+Route::get('/cart','Front@cart');
 
 Route::get('blade', function () {
     $drinks = array('Vodka','Gin','Brandy');
