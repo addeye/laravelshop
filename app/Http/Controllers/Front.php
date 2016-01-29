@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Brand;
 use App\Category;
 use App\Product;
+Use App\User;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
 use Cart;
 
 class Front extends Controller {
@@ -19,47 +23,66 @@ class Front extends Controller {
     public function __construct() {
         $this->brands = Brand::all(array('name'));
         $this->categories = Category::all(array('name'));
-        $this->products = Product::all(array('id','name','price'));
+        $this->products = Product::all(array('id', 'name', 'price'));
     }
 
     public function index() {
-        return view('home', array('page' => 'home'));
+        return view('home', array('title' => 'Welcome', 'description' => '', 'page' => 'home', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function products() {
-        return view('products', array('title' => 'Products Listing','description' => '','page' => 'products', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
+        return view('products', array('title' => 'Products Listing', 'description' => '', 'page' => 'products', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function product_details($id) {
-        return view('product_details', array('page' => 'products'));
+        $product = Product::find($id);
+        return view('product_details', array('product' => $product, 'title' => $product->name, 'description' => '', 'page' => 'products', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function product_categories($name) {
-        return view('products', array('page' => 'products'));
+        return view('products', array('title' => 'Welcome', 'description' => '', 'page' => 'products', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function product_brands($name, $category = null) {
-        return view('products', array('page' => 'products'));
+        return view('products', array('title' => 'Welcome', 'description' => '', 'page' => 'products', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function blog() {
-        return view('blog', array('page' => 'blog'));
+        return view('blog', array('title' => 'Welcome', 'description' => '', 'page' => 'blog', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function blog_post($id) {
-        return view('blog_post', array('page' => 'blog'));
+        return view('blog_post', array('title' => 'Welcome', 'description' => '', 'page' => 'blog', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
     public function contact_us() {
-        return view('contact_us', array('page' => 'contact_us'));
+        return view('contact_us', array('title' => 'Welcome', 'description' => '', 'page' => 'contact_us'));
+    }
+
+    public function register() {
+        if (Request::isMethod('post')) {
+            User::create(['name' => Request::get('name'), 'email' => Request::get('email'), 'password' => bcrypt(Request::get('password')),]);
+        }
+
+        return Redirect::away('login');
+    }
+
+    public function authenticate() {
+        if (Auth::attempt(['email' => Request::get('email'), 'password' => Request::get('password')])) {
+            return redirect()->intended('checkout');
+        } else {
+            return view('login', array('title' => 'Welcome', 'description' => '', 'page' => 'home'));
+        }
     }
 
     public function login() {
-        return view('login', array('page' => 'home'));
+        return view('login', array('title' => 'Welcome', 'description' => '', 'page' => 'home'));
     }
 
     public function logout() {
-        return view('login', array('page' => 'home'));
+        Auth::logout();
+
+        return Redirect::away('login');
     }
 
     public function cart() {
@@ -70,39 +93,40 @@ class Front extends Controller {
             Cart::add(array('id' => $product_id, 'name' => $product->name, 'qty' => 1, 'price' => $product->price));
         }
 
-        if (Request::isMethod('get')) {
-            $product_id = Request::get('product_id');
-            $jml = Request::get('jml');
-            $product = Product::find($product_id);
-            Cart::add(array('id' => $product_id, 'name' => $product->name, 'qty' => $jml, 'price' => $product->price));
-
-            $rowId = Cart::search(array('id' => Request::get('product_id')));
-            $item = Cart::get($rowId[0]);
-        }
-
         //increment the quantity
         if (Request::get('product_id') && (Request::get('increment')) == 1) {
+            $rowId = Cart::search(array('id' => Request::get('product_id')));
+
+            $item = Cart::get($rowId[0]);
+
             Cart::update($rowId[0], $item->qty + 1);
         }
 
         //decrease the quantity
         if (Request::get('product_id') && (Request::get('decrease')) == 1) {
+            $rowId = Cart::search(array('id' => Request::get('product_id')));
+            $item = Cart::get($rowId[0]);
 
             Cart::update($rowId[0], $item->qty - 1);
         }
 
-        $cart = Cart::content();
 
+        $cart = Cart::content();
 
         return view('cart', array('cart' => $cart, 'title' => 'Welcome', 'description' => '', 'page' => 'home'));
     }
 
+    public function clear_cart() {
+        Cart::destroy();
+        return Redirect::away('cart');
+    }
+
     public function checkout() {
-        return view('checkout', array('page' => 'home'));
+        return view('checkout', array('title' => 'Welcome', 'description' => '', 'page' => 'home'));
     }
 
     public function search($query) {
-        return view('products', array('page' => 'products'));
+        return view('products', array('title' => 'Welcome', 'description' => '', 'page' => 'products'));
     }
 
 }
