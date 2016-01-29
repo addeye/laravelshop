@@ -116,6 +116,14 @@ class Front extends Controller {
         return view('cart', array('cart' => $cart, 'title' => 'Welcome', 'description' => '', 'page' => 'home'));
     }
 
+    public function cart_remove_item(){
+        $rowId = Cart::search(array('id' => Request::get('product_id')));
+        Cart::remove($rowId[0]);
+        $cart = Cart::content();
+
+        return view('cart', array('cart' => $cart, 'title' => 'Welcome', 'description' => '', 'page' => 'home'));
+    }
+
     public function clear_cart() {
         Cart::destroy();
         return Redirect::away('cart');

@@ -37,9 +37,9 @@
                         </td>
                         <td class="cart_quantity">
                             <div class="cart_quantity_button">
-                                <form method="POST" action="{{url('cart')}}">
+                                <!-- <form method="POST" action="{{url('cart')}}"> -->
                                     <a class="cart_quantity_up" href='{{url("cart?product_id=$item->id&increment=1")}}'> + </a>
-                                </form>
+                                <!-- </form> -->
                                 <input class="cart_quantity_input" type="text" name="quantity" value="{{$item->qty}}" autocomplete="off" size="2">
                                 <a class="cart_quantity_down" href='{{url("cart?product_id=$item->id&decrease=1")}}'> - </a>
                             </div>
@@ -48,7 +48,7 @@
                             <p class="cart_total_price">${{$item->subtotal}}</p>
                         </td>
                         <td class="cart_delete">
-                            <a class="cart_quantity_delete" href=""><i class="fa fa-times"></i></a>
+                            <a href='{{url("cart-remove-item?product_id=$item->id")}}' class="cart_quantity_delete"><i class="fa fa-times"></i></a>
                         </td>
                     </tr>
                     @endforeach
