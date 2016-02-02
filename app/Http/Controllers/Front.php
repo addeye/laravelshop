@@ -7,6 +7,7 @@ use App\Category;
 use App\Product;
 Use App\User;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserCreateRequest;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
@@ -59,17 +60,21 @@ class Front extends Controller {
         return view('contact_us', array('title' => 'Welcome', 'description' => '', 'page' => 'contact_us'));
     }
 
-    public function register() {
+    public function register(UserCreateRequest $request) {
+        $name = Request::get('name');
         if (Request::isMethod('post')) {
             User::create(['name' => Request::get('name'), 'email' => Request::get('email'), 'password' => bcrypt(Request::get('password')),]);
         }
+            return redirect('auth/login')
+                ->withSuccess("Pengguna '$name' Telah Dibuat Silahkan bisa Login.");
 
-        return Redirect::away('login');
+
     }
 
     public function authenticate() {
         if (Auth::attempt(['email' => Request::get('email'), 'password' => Request::get('password')])) {
-            return redirect()->intended('checkout');
+            $name = Auth::user()->name;
+            return redirect()->intended('checkout')->withSuccess("Selamat Datang '$name'.");
         } else {
             return view('login', array('title' => 'Welcome', 'description' => '', 'page' => 'home'));
         }
