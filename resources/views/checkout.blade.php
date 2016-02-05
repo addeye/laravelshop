@@ -3,7 +3,6 @@
 @section('content')       
 <section id="cart_items">
     <div class="container">
-        @include('partials.success')
         <div class="breadcrumbs">
             <ol class="breadcrumb">
                 <li><a href="#">Home</a></li>

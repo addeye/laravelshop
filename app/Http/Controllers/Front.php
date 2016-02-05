@@ -5,13 +5,12 @@ namespace App\Http\Controllers;
 use App\Brand;
 use App\Category;
 use App\Product;
-Use App\User;
+use App\User;
+
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UserCreateRequest;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Http\FormRequest;
 use Cart;
 
 class Front extends Controller {
@@ -50,32 +49,56 @@ class Front extends Controller {
     }
 
     public function blog() {
-        return view('blog', array('title' => 'Welcome', 'description' => '', 'page' => 'blog', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
+        $posts = \App\Post::where('id', '>', 0)->paginate(3);
+        $posts->setPath('blog');
+
+        $data['posts'] = $posts;
+
+        return view('blog', array('data' => $data, 'title' => 'Latest Blog Posts', 'description' => '', 'page' => 'blog', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
     }
 
-    public function blog_post($id) {
-        return view('blog_post', array('title' => 'Welcome', 'description' => '', 'page' => 'blog', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
+    public function blog_post($url) {
+        $post = \App\Post::where('url', '=', $url)->get();
+
+        $post_id = $post[0]['id'];
+        
+        $tags = \App\BlogPostTag::postTags($post_id);
+
+        $previous_url = \App\Post::prevBlogPostUrl($post_id);
+        $next_url = \App\Post::nextBlogPostUrl($post_id);
+
+        $data['previous_url'] = $previous_url;
+        $data['next_url'] = $next_url;
+        $data['tags'] = $tags;
+        $data['post'] = $post[0];
+        $data['title'] = $post[0]['title'];
+        $data['description'] = $post[0]['description'];
+        $data['page'] = 'blog';
+        $data['brands'] = $this->brands;
+        $data['categories'] = $this->categories;
+        $data['products'] = $this->products;
+
+        return view('blog_post', array('data' => $data, 'title' => $post[0]['title'], 'description' => $post[0]['description'], 'page' => 'blog', 'brands' => $this->brands, 'categories' => $this->categories, 'products' => $this->products));
+//        $data = compact('prev_url', 'next_url', 'tags', 'post', 'title', 'description', 'page', 'brands', 'categories', 'products');
+//        return $data;
+        return view('blog_post', $data);
     }
 
     public function contact_us() {
         return view('contact_us', array('title' => 'Welcome', 'description' => '', 'page' => 'contact_us'));
     }
 
-    public function register(UserCreateRequest $request) {
-        $name = Request::get('name');
+    public function register() {
         if (Request::isMethod('post')) {
             User::create(['name' => Request::get('name'), 'email' => Request::get('email'), 'password' => bcrypt(Request::get('password')),]);
         }
-            return redirect('auth/login')
-                ->withSuccess("Pengguna '$name' Telah Dibuat Silahkan bisa Login.");
 
-
+        return Redirect::away('login');
     }
 
     public function authenticate() {
         if (Auth::attempt(['email' => Request::get('email'), 'password' => Request::get('password')])) {
-            $name = Auth::user()->name;
-            return redirect()->intended('checkout')->withSuccess("Selamat Datang '$name'.");
+            return redirect()->intended('checkout');
         } else {
             return view('login', array('title' => 'Welcome', 'description' => '', 'page' => 'home'));
         }
@@ -117,14 +140,6 @@ class Front extends Controller {
         }
 
 
-        $cart = Cart::content();
-
-        return view('cart', array('cart' => $cart, 'title' => 'Welcome', 'description' => '', 'page' => 'home'));
-    }
-
-    public function cart_remove_item(){
-        $rowId = Cart::search(array('id' => Request::get('product_id')));
-        Cart::remove($rowId[0]);
         $cart = Cart::content();
 
         return view('cart', array('cart' => $cart, 'title' => 'Welcome', 'description' => '', 'page' => 'home'));
