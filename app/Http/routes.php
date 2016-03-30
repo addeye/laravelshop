@@ -10,6 +10,7 @@
   | and give it the controller to call when that URI is requested.
   |
  */
+Route::group(['middleware' => 'web'], function () {
 Route::get('/', 'Front@index');
 Route::get('/products', 'Front@products');
 Route::get('/products/details/{id}', 'Front@product_details');
@@ -18,13 +19,18 @@ Route::get('/products/brands/{name}/{category?}', 'Front@product_brands');
 Route::get('/blog', 'Front@blog');
 Route::get('/blog/post/{url}', 'Front@blog_post');
 Route::get('/contact-us', 'Front@contact_us');
-// Authentication routes...
-Route::get('auth/login', 'Front@login');
-Route::post('auth/login', 'Front@authenticate');
-Route::get('auth/logout', 'Front@logout');
+
+
+    // Authentication routes...
+    Route::get('auth/login', 'Front@login');
+    Route::post('auth/login', 'Front@authenticate');
+    Route::get('auth/logout', 'Front@logout');
 
 // Registration routes...
-Route::post('/register', 'Front@register');
+    Route::post('/register', 'Front@register');
+
+
+
 
 // Registration routes...
 Route::get('/cart', 'Front@cart');
@@ -32,10 +38,11 @@ Route::post('/cart', 'Front@cart');
 Route::post('/cart-remove-item', 'Front@cart_remove_item');
 Route::get('/clear-cart', 'Front@clear_cart');
 Route::get('/checkout', [
-    'middleware' => 'auth',
+//    'middleware' => 'auth',
     'uses' => 'Front@checkout'
 ]);
 Route::get('/search/{query}', 'Front@search');
+});
 
 // API routes...
 Route::get('/api/v1/products/{id?}', ['middleware' => 'auth.basic', function($id = null) {
